@@ -6,6 +6,32 @@
 
 ---
 
+## [1.0.2] - 2026-03-20
+
+### 🐛 问题修复
+
+#### AI文献解读对话历史持久化修复
+- **问题描述**: 在使用"AI文献解读"功能获得回答并保存历史对话后，切换到其他功能再切换回来，历史对话会消失
+- **根本原因**:
+  - 原始架构在切换功能时会销毁整个DOM（使用 `container.innerHTML = ''`）
+  - 没有实例缓存机制，每次切换都会重新创建功能实例
+  - 每个Feature的 `render()` 方法使用 `innerHTML = ...` 替换整个容器内容，导致其他面板被销毁
+- **修复方案**:
+  - 在 `SidebarManager` 中添加 `featureInstances` 缓存对象，存储各功能实例
+  - 修改 `switchFeature()` 方法，使用 `display: none` 隐藏/显示面板，而不是销毁DOM
+  - 改进切换逻辑：同时检查缓存实例和DOM中是否存在面板，避免重复渲染
+  - 在 `QAFeature` 中添加 `historyData` 数组缓存对话数据
+  - 添加 `restoreHistory()` 方法，从缓存数据重建DOM
+  - 修改所有Feature的 `render()` 方法，使用 `appendChild(panel)` 替代 `innerHTML = ...`
+  - 在 `addToHistory()` 中同时限制数据数组和DOM条目数量为20条
+- **修改文件**:
+  - `sidebar/SidebarManager.js`: 添加实例缓存和改进切换逻辑
+  - `sidebar/features/QAFeature.js`: 添加对话数据缓存和历史恢复机制
+  - `sidebar/features/TranslationFeature.js`: 修改 `render()` 方法使用 `appendChild`
+  - `sidebar/features/CitationFeature.js`: 修改 `render()` 方法使用 `appendChild`
+
+---
+
 ## [1.0.1] - 2026-03-07
 
 ### ✨ 新增功能

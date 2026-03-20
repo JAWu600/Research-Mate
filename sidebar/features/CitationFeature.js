@@ -14,78 +14,89 @@ export class CitationFeature {
    * 渲染功能UI
    */
   render(container) {
-    container.innerHTML = `
-      <div class="pra-feature-panel active" data-feature="citation">
-        <div class="pra-section-title">${chrome.i18n.getMessage('citationLabel')}</div>
+    // 检查是否已有自己的面板存在于容器中（避免重复渲染）
+    const existingPanel = container.querySelector('.pra-feature-panel[data-feature="citation"]');
+    if (existingPanel) {
+      existingPanel.style.display = '';
+      existingPanel.classList.add('active');
+      return;
+    }
 
-        <div class="pra-info-text" style="margin-bottom: 12px; color: #666; font-size: 13px;">
-          ${chrome.i18n.getMessage('autoIdentifyPaper')}
+    // 创建面板元素并追加到容器（而不是替换整个容器）
+    const panel = document.createElement('div');
+    panel.className = 'pra-feature-panel active';
+    panel.setAttribute('data-feature', 'citation');
+    panel.innerHTML = `
+      <div class="pra-section-title">${chrome.i18n.getMessage('citationLabel')}</div>
+
+      <div class="pra-info-text" style="margin-bottom: 12px; color: #666; font-size: 13px;">
+        ${chrome.i18n.getMessage('autoIdentifyPaper')}
+      </div>
+
+      <button id="pra-citation-fetch-btn" class="pra-btn pra-btn-primary" style="width: 100%;">
+        ${chrome.i18n.getMessage('fetchPaper')}
+      </button>
+
+      <div id="pra-citation-paper-info" style="display: none; margin-top: 16px;">
+        <div class="pra-form-group">
+          <label class="pra-label">${chrome.i18n.getMessage('paperTitle')}</label>
+          <input
+            type="text"
+            id="pra-citation-title"
+            class="pra-input"
+            readonly
+          >
         </div>
 
-        <button id="pra-citation-fetch-btn" class="pra-btn pra-btn-primary" style="width: 100%;">
-          ${chrome.i18n.getMessage('fetchPaper')}
-        </button>
-
-        <div id="pra-citation-paper-info" style="display: none; margin-top: 16px;">
-          <div class="pra-form-group">
-            <label class="pra-label">${chrome.i18n.getMessage('paperTitle')}</label>
-            <input
-              type="text"
-              id="pra-citation-title"
-              class="pra-input"
-              readonly
-            >
-          </div>
-
-          <div class="pra-form-group">
-            <label class="pra-label">DOI</label>
-            <input
-              type="text"
-              id="pra-citation-doi"
-              class="pra-input"
-              readonly
-            >
-          </div>
-
-          <div class="pra-form-group">
-            <label class="pra-label">${chrome.i18n.getMessage('citationStyle')}</label>
-            <select id="pra-citation-style" class="pra-select">
-              <option value="apa">${chrome.i18n.getMessage('apaFormat')}</option>
-              <option value="mla">${chrome.i18n.getMessage('mlaFormat')}</option>
-              <option value="chicago">${chrome.i18n.getMessage('chicagoFormat')}</option>
-              <option value="harvard">${chrome.i18n.getMessage('harvardFormat')}</option>
-              <option value="ieee">${chrome.i18n.getMessage('ieeeFormat')}</option>
-              <option value="vancouver">${chrome.i18n.getMessage('vancouverFormat')}</option>
-              <option value="bibtex">${chrome.i18n.getMessage('bibtexFormat')}</option>
-            </select>
-          </div>
-
-          <div id="pra-citation-result-container" style="display: none;">
-            <div class="pra-form-group">
-              <label class="pra-label">${chrome.i18n.getMessage('citationResult')}</label>
-              <div id="pra-citation-result" class="pra-result-box">
-              </div>
-            </div>
-
-            <button
-              id="pra-citation-copy-btn"
-              class="pra-btn pra-btn-secondary"
-              style="width: 100%; margin-top: 12px;"
-            >
-              ${chrome.i18n.getMessage('copyCitation')}
-            </button>
-
-            <div style="margin-top: 12px; padding: 8px; background: #f5f5f5; border-radius: 4px; font-size: 12px; color: #666; text-align: center;">
-              📚 <a href="https://www.crossref.org" target="_blank" style="color: #1976d2; text-decoration: none;">Crossref</a>
-            </div>
-          </div>
+        <div class="pra-form-group">
+          <label class="pra-label">DOI</label>
+          <input
+            type="text"
+            id="pra-citation-doi"
+            class="pra-input"
+            readonly
+          >
         </div>
 
-        <div id="pra-citation-error" style="display: none; margin-top: 16px;">
-          <div class="pra-error-box"></div>
+        <div class="pra-form-group">
+          <label class="pra-label">${chrome.i18n.getMessage('citationStyle')}</label>
+          <select id="pra-citation-style" class="pra-select">
+            <option value="apa">${chrome.i18n.getMessage('apaFormat')}</option>
+            <option value="mla">${chrome.i18n.getMessage('mlaFormat')}</option>
+            <option value="chicago">${chrome.i18n.getMessage('chicagoFormat')}</option>
+            <option value="harvard">${chrome.i18n.getMessage('harvardFormat')}</option>
+            <option value="ieee">${chrome.i18n.getMessage('ieeeFormat')}</option>
+            <option value="vancouver">${chrome.i18n.getMessage('vancouverFormat')}</option>
+            <option value="bibtex">${chrome.i18n.getMessage('bibtexFormat')}</option>
+          </select>
+        </div>
+
+        <div id="pra-citation-result-container" style="display: none;">
+          <div class="pra-form-group">
+            <label class="pra-label">${chrome.i18n.getMessage('citationResult')}</label>
+            <div id="pra-citation-result" class="pra-result-box">
+            </div>
+          </div>
+
+          <button
+            id="pra-citation-copy-btn"
+            class="pra-btn pra-btn-secondary"
+            style="width: 100%; margin-top: 12px;"
+          >
+            ${chrome.i18n.getMessage('copyCitation')}
+          </button>
+
+          <div style="margin-top: 12px; padding: 8px; background: #f5f5f5; border-radius: 4px; font-size: 12px; color: #666; text-align: center;">
+            📚 <a href="https://www.crossref.org" target="_blank" style="color: #1976d2; text-decoration: none;">Crossref</a>
+          </div>
         </div>
       </div>
+
+      <div id="pra-citation-error" style="display: none; margin-top: 16px;">
+        <div class="pra-error-box"></div>
+      </div>
     `;
+    container.appendChild(panel);
 
     // 绑定事件
     this.bindEvents();

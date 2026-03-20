@@ -10,84 +10,100 @@ export class QAFeature {
     this.selectedProvider = null;
     this.selectedModel = null;
     this.isLoading = false;
+    // 缓存历史对话数据，切换标签后可恢复
+    this.historyData = [];
   }
 
   /**
    * 渲染功能UI
    */
   render(container) {
-    container.innerHTML = `
-      <div class="pra-feature-panel active" data-feature="qa">
-        <div class="pra-section-title">${chrome.i18n.getMessage('qaLabel')}</div>
+    // 检查是否已有自己的面板存在于容器中（避免重复渲染）
+    const existingPanel = container.querySelector('.pra-feature-panel[data-feature="qa"]');
+    if (existingPanel) {
+      existingPanel.style.display = '';
+      existingPanel.classList.add('active');
+      return;
+    }
 
-        <!-- 模型选择区 -->
-        <div class="pra-form-group">
-          <label class="pra-label">${chrome.i18n.getMessage('selectModel')}</label>
-          <div class="pra-model-selector">
-            <select id="pra-provider-select" class="pra-select">
-              <option value="">${chrome.i18n.getMessage('selectProvider')}</option>
-            </select>
-            <select id="pra-model-select" class="pra-select" disabled>
-              <option value="">${chrome.i18n.getMessage('selectProviderFirst')}</option>
-            </select>
-            <button id="pra-qa-settings-btn" class="pra-settings-btn" title="${chrome.i18n.getMessage('apiSettings')}">⚙️</button>
-          </div>
-          <div id="pra-qa-api-status" class="pra-api-status-mini">
-            <span class="pra-status-text">${chrome.i18n.getMessage('loading')}</span>
-          </div>
+    // 创建面板元素并追加到容器（而不是替换整个容器）
+    const panel = document.createElement('div');
+    panel.className = 'pra-feature-panel active';
+    panel.setAttribute('data-feature', 'qa');
+    panel.innerHTML = `
+      <div class="pra-section-title">${chrome.i18n.getMessage('qaLabel')}</div>
+
+      <!-- 模型选择区 -->
+      <div class="pra-form-group">
+        <label class="pra-label">${chrome.i18n.getMessage('selectModel')}</label>
+        <div class="pra-model-selector">
+          <select id="pra-provider-select" class="pra-select">
+            <option value="">${chrome.i18n.getMessage('selectProvider')}</option>
+          </select>
+          <select id="pra-model-select" class="pra-select" disabled>
+            <option value="">${chrome.i18n.getMessage('selectProviderFirst')}</option>
+          </select>
+          <button id="pra-qa-settings-btn" class="pra-settings-btn" title="${chrome.i18n.getMessage('apiSettings')}">⚙️</button>
         </div>
-
-        <!-- 问题输入区 -->
-        <div class="pra-form-group">
-          <label class="pra-label">${chrome.i18n.getMessage('yourQuestion')}</label>
-          <textarea
-            id="pra-qa-question"
-            class="pra-textarea"
-            placeholder="${chrome.i18n.getMessage('questionPlaceholder')}"
-            rows="2"
-          ></textarea>
+        <div id="pra-qa-api-status" class="pra-api-status-mini">
+          <span class="pra-status-text">${chrome.i18n.getMessage('loading')}</span>
         </div>
+      </div>
 
-        <!-- 操作按钮 -->
-        <div class="pra-button-row">
-          <button id="pra-qa-btn" class="pra-btn pra-btn-primary">
-            ${chrome.i18n.getMessage('askButton')}
-          </button>
+      <!-- 问题输入区 -->
+      <div class="pra-form-group">
+        <label class="pra-label">${chrome.i18n.getMessage('yourQuestion')}</label>
+        <textarea
+          id="pra-qa-question"
+          class="pra-textarea"
+          placeholder="${chrome.i18n.getMessage('questionPlaceholder')}"
+          rows="2"
+        ></textarea>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="pra-button-row">
+        <button id="pra-qa-btn" class="pra-btn pra-btn-primary">
+          ${chrome.i18n.getMessage('askButton')}
+        </button>
+      </div>
+
+      <!-- 回答展示区 -->
+      <div class="pra-form-group" style="margin-top: 16px;">
+        <div class="pra-result-header">
+          <label class="pra-label">${chrome.i18n.getMessage('aiAnswer')}</label>
+          <span id="pra-qa-provider-info" class="pra-provider-info"></span>
         </div>
-
-        <!-- 回答展示区 -->
-        <div class="pra-form-group" style="margin-top: 16px;">
-          <div class="pra-result-header">
-            <label class="pra-label">${chrome.i18n.getMessage('aiAnswer')}</label>
-            <span id="pra-qa-provider-info" class="pra-provider-info"></span>
-          </div>
-          <div id="pra-qa-result" class="pra-result-box pra-result-markdown">
-            ${chrome.i18n.getMessage('pleaseSelectModelAndQuestion')}
-          </div>
-          <div class="pra-result-actions" id="pra-qa-actions" style="display: none;">
-            <button id="pra-qa-copy" class="pra-action-btn" title="${chrome.i18n.getMessage('copy')}">${chrome.i18n.getMessage('copy')}</button>
-            <button id="pra-qa-retry" class="pra-action-btn" title="${chrome.i18n.getMessage('retry')}">${chrome.i18n.getMessage('retry')}</button>
-          </div>
+        <div id="pra-qa-result" class="pra-result-box pra-result-markdown">
+          ${chrome.i18n.getMessage('pleaseSelectModelAndQuestion')}
         </div>
+        <div class="pra-result-actions" id="pra-qa-actions" style="display: none;">
+          <button id="pra-qa-copy" class="pra-action-btn" title="${chrome.i18n.getMessage('copy')}">${chrome.i18n.getMessage('copy')}</button>
+          <button id="pra-qa-retry" class="pra-action-btn" title="${chrome.i18n.getMessage('retry')}">${chrome.i18n.getMessage('retry')}</button>
+        </div>
+      </div>
 
-        <!-- 历史对话 -->
-        <div class="pra-history-section">
-          <div class="pra-section-title" style="font-size: 14px; margin-top: 20px;">
-            ${chrome.i18n.getMessage('historyTitle')}
-            <button id="pra-qa-clear-history" class="pra-clear-btn" title="${chrome.i18n.getMessage('clearHistory')}">${chrome.i18n.getMessage('clearHistory')}</button>
-          </div>
-          <div id="pra-qa-history" class="pra-history-list">
-            <div class="pra-empty-history">${chrome.i18n.getMessage('noHistory')}</div>
-          </div>
+      <!-- 历史对话 -->
+      <div class="pra-history-section">
+        <div class="pra-section-title" style="font-size: 14px; margin-top: 20px;">
+          ${chrome.i18n.getMessage('historyTitle')}
+          <button id="pra-qa-clear-history" class="pra-clear-btn" title="${chrome.i18n.getMessage('clearHistory')}">${chrome.i18n.getMessage('clearHistory')}</button>
+        </div>
+        <div id="pra-qa-history" class="pra-history-list">
+          <div class="pra-empty-history">${chrome.i18n.getMessage('noHistory')}</div>
         </div>
       </div>
     `;
+    container.appendChild(panel);
 
     // 加载API提供商信息
     this.loadProviders();
 
     // 绑定事件
     this.bindEvents();
+
+    // 恢复已缓存的历史对话
+    this.restoreHistory();
   }
 
   /**
@@ -562,7 +578,13 @@ export class QAFeature {
 
     historyList.insertBefore(historyItem, historyList.firstChild);
 
-    // 限制历史记录数量
+    // 同步保存到缓存数组
+    this.historyData.unshift({ question, answer });
+    if (this.historyData.length > 20) {
+      this.historyData.pop();
+    }
+
+    // 限制 DOM 层面的历史记录数量
     const items = historyList.querySelectorAll('.pra-history-item');
     if (items.length > 20) {
       items[items.length - 1].remove();
@@ -576,7 +598,41 @@ export class QAFeature {
     if (confirm(chrome.i18n.getMessage('confirmClearHistory'))) {
       const historyList = document.getElementById('pra-qa-history');
       historyList.innerHTML = `<div class="pra-empty-history">${chrome.i18n.getMessage('noHistory')}</div>`;
+      this.historyData = [];
     }
+  }
+
+  /**
+   * 从缓存恢复历史对话到DOM
+   */
+  restoreHistory() {
+    if (this.historyData.length === 0) return;
+
+    const historyList = document.getElementById('pra-qa-history');
+    if (!historyList) return;
+
+    // 移除空历史提示
+    const emptyHistory = historyList.querySelector('.pra-empty-history');
+    if (emptyHistory) {
+      emptyHistory.remove();
+    }
+
+    // 从缓存数据重建历史条目
+    this.historyData.forEach(({ question, answer }) => {
+      const historyItem = document.createElement('div');
+      historyItem.className = 'pra-history-item';
+      historyItem.innerHTML = `
+        <div class="pra-history-question">Q: ${this.escapeHtml(question)}</div>
+        <div class="pra-history-answer">${this.escapeHtml(answer.substring(0, 100))}${answer.length > 100 ? '...' : ''}</div>
+      `;
+
+      historyItem.addEventListener('click', () => {
+        document.getElementById('pra-qa-question').value = question;
+        document.getElementById('pra-qa-question').focus();
+      });
+
+      historyList.appendChild(historyItem);
+    });
   }
 
   /**

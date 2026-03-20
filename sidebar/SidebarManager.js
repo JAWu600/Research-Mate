@@ -20,6 +20,9 @@ export class SidebarManager {
     this.isResizing = false;
     this.resizeStartX = 0;
     this.resizeStartWidth = 0;
+
+    // 功能实例缓存：保存各功能组件的实例，切换时不销毁
+    this.featureInstances = {};
   }
 
   /**
@@ -494,8 +497,16 @@ export class SidebarManager {
       return; // 已经是当前功能
     }
 
-    // 停止旧功能
-    await this.stopCurrentFeature();
+    const container = document.getElementById('pra-sidebar-content');
+
+    // 隐藏旧功能的DOM面板（不清空，保留状态）
+    if (this.currentFeature && container) {
+      const oldPanel = container.querySelector(`.pra-feature-panel[data-feature="${this.currentFeature}"]`);
+      if (oldPanel) {
+        oldPanel.style.display = 'none';
+        oldPanel.classList.remove('active');
+      }
+    }
 
     // 切换到新功能
     const featureConfig = this.featureRegistry.get(featureKey);
@@ -503,18 +514,36 @@ export class SidebarManager {
       this.currentFeature = featureKey;
       this.tabManager.setActiveTab(featureKey);
 
-      // 动态加载并初始化功能组件
-      const FeatureClass = await featureConfig.component();
-      const container = document.getElementById('pra-sidebar-content');
-      container.innerHTML = '';
-      FeatureClass.render(container);
+      // 检查是否已有缓存的实例，且其DOM面板仍然存在
+      const cachedInstance = this.featureInstances[featureKey];
+      const existingPanel = container ? container.querySelector(`.pra-feature-panel[data-feature="${featureKey}"]`) : null;
+
+      if (cachedInstance && existingPanel) {
+        // 已有实例且DOM存在，直接恢复显示
+        existingPanel.style.display = '';
+        existingPanel.classList.add('active');
+      } else {
+        // 首次激活或DOM已被清除，需要重新渲染
+        const FeatureInstance = await featureConfig.component();
+        this.featureInstances[featureKey] = FeatureInstance;
+        FeatureInstance.render(container);
+      }
     }
   }
 
   /**
-   * 停止当前功能
+   * 停止当前功能（仅在销毁侧边栏时调用）
    */
   async stopCurrentFeature() {
+    // 依次调用所有缓存功能的destroy方法
+    for (const key of Object.keys(this.featureInstances)) {
+      const instance = this.featureInstances[key];
+      if (instance && typeof instance.destroy === 'function') {
+        instance.destroy();
+      }
+    }
+    this.featureInstances = {};
+
     const contentContainer = document.getElementById('pra-sidebar-content');
     if (contentContainer) {
       contentContainer.innerHTML = '';

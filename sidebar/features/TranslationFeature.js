@@ -16,6 +16,14 @@ export class TranslationFeature {
    * 渲染功能UI
    */
   render(container) {
+    // 检查是否已有自己的面板存在于容器中（避免重复渲染）
+    const existingPanel = container.querySelector('.pra-feature-panel[data-feature="translate"]');
+    if (existingPanel) {
+      existingPanel.style.display = '';
+      existingPanel.classList.add('active');
+      return;
+    }
+
     // 生成翻译服务选项
     const providerOptions = this.translationProviders.map(
       provider => `<option value="${provider.key}">${provider.name}</option>`
@@ -56,58 +64,61 @@ export class TranslationFeature {
     const fromLanguageOptions = languageOptions.map(lang => `<option value="${lang.value}">${lang.name}</option>`).join('');
     const toLanguageOptions = languageOptions.filter(lang => lang.value !== 'auto').map(lang => `<option value="${lang.value}">${lang.name}</option>`).join('');
 
-    container.innerHTML = `
-      <div class="pra-feature-panel active" data-feature="translate">
-        <div class="pra-section-title">${chrome.i18n.getMessage('translateLabel')}</div>
+    // 创建面板元素并追加到容器（而不是替换整个容器）
+    const panel = document.createElement('div');
+    panel.className = 'pra-feature-panel active';
+    panel.setAttribute('data-feature', 'translate');
+    panel.innerHTML = `
+      <div class="pra-section-title">${chrome.i18n.getMessage('translateLabel')}</div>
 
-        <div class="pra-form-group" style="font-size: 13px; color: #666; margin-bottom: 16px;">
-          ${chrome.i18n.getMessage('selectTextFirst')}
-        </div>
-
-        <div class="pra-form-group">
-          <label class="pra-label">${chrome.i18n.getMessage('translateProvider')}</label>
-          <select id="pra-translate-provider" class="pra-select">
-            ${providerOptions}
-          </select>
-        </div>
-
-        <div class="pra-form-group">
-          <div class="pra-row">
-            <div class="pra-col">
-              <label class="pra-label">${chrome.i18n.getMessage('sourceLanguage')}</label>
-              <select id="pra-translate-from" class="pra-select">
-                ${fromLanguageOptions}
-              </select>
-            </div>
-            <div class="pra-col">
-              <label class="pra-label">${chrome.i18n.getMessage('targetLanguage')}</label>
-              <select id="pra-translate-to" class="pra-select">
-                ${toLanguageOptions}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <button id="pra-translate-btn" class="pra-btn pra-btn-primary">
-          ${chrome.i18n.getMessage('translateButton')}
-        </button>
-
-        <div class="pra-form-group" style="margin-top: 16px;">
-          <label class="pra-label">${chrome.i18n.getMessage('translateResult')}</label>
-          <div id="pra-translate-result" class="pra-result-box">
-            ${chrome.i18n.getMessage('translationResultPlaceholder')}
-          </div>
-        </div>
-
-        <button
-          id="pra-translate-copy-btn"
-          class="pra-btn pra-btn-secondary"
-          style="display: none; margin-top: 12px;"
-        >
-          ${chrome.i18n.getMessage('copyTranslationResult')}
-        </button>
+      <div class="pra-form-group" style="font-size: 13px; color: #666; margin-bottom: 16px;">
+        ${chrome.i18n.getMessage('selectTextFirst')}
       </div>
+
+      <div class="pra-form-group">
+        <label class="pra-label">${chrome.i18n.getMessage('translateProvider')}</label>
+        <select id="pra-translate-provider" class="pra-select">
+          ${providerOptions}
+        </select>
+      </div>
+
+      <div class="pra-form-group">
+        <div class="pra-row">
+          <div class="pra-col">
+            <label class="pra-label">${chrome.i18n.getMessage('sourceLanguage')}</label>
+            <select id="pra-translate-from" class="pra-select">
+              ${fromLanguageOptions}
+            </select>
+          </div>
+          <div class="pra-col">
+            <label class="pra-label">${chrome.i18n.getMessage('targetLanguage')}</label>
+            <select id="pra-translate-to" class="pra-select">
+              ${toLanguageOptions}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button id="pra-translate-btn" class="pra-btn pra-btn-primary">
+        ${chrome.i18n.getMessage('translateButton')}
+      </button>
+
+      <div class="pra-form-group" style="margin-top: 16px;">
+        <label class="pra-label">${chrome.i18n.getMessage('translateResult')}</label>
+        <div id="pra-translate-result" class="pra-result-box">
+          ${chrome.i18n.getMessage('translationResultPlaceholder')}
+        </div>
+      </div>
+
+      <button
+        id="pra-translate-copy-btn"
+        class="pra-btn pra-btn-secondary"
+        style="display: none; margin-top: 12px;"
+      >
+        ${chrome.i18n.getMessage('copyTranslationResult')}
+      </button>
     `;
+    container.appendChild(panel);
 
     // 绑定事件
     this.bindEvents();

@@ -39,7 +39,7 @@ If you like this project, please give it a ⭐ star, thanks!
 ### 🌐 Text Translation
 
 - Multi-language translation with automatic source language detection
-- Supports multiple translation services: Baidu, Tencent, Bing, Google, LibreTranslate
+- Supports multiple translation services: Google, Bing, LibreTranslate
 - Automatically copy translation results to clipboard
 
 <img src="figures/text-translation-en.png">

@@ -39,7 +39,7 @@
 ### 🌐 文本翻译
 
 - 支持多语言互译，自动检测源语言
-- 支持多种翻译服务：百度翻译、腾讯翻译、必应翻译、Google翻译、LibreTranslate
+- 支持多种翻译服务：Google翻译、必应翻译、LibreTranslate
 - 翻译结果可一键复制到剪贴板
 
 <img src="figures/text-translation.png">
