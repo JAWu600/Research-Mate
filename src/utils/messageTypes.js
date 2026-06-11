@@ -6,6 +6,5 @@ export const MSG_TYPES = {
     // Content -> Background -> Sidebar
     EXTRACT_RESULT: 'EXTRACT_RESULT',
     EXTRACT_ERROR: 'EXTRACT_ERROR',
-    EXTRACT_PDF_FROM_URL: 'EXTRACT_PDF_FROM_URL' ,
   };
   

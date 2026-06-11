@@ -13,7 +13,7 @@ export default function ExtractButton({ onClick, loading }) {
           提取中...
         </>
       ) : (
-        '🔍 提取文献内容'
+        '🔍 提取网页内容'
       )}
     </button>
   );

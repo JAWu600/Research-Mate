@@ -8,6 +8,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f5f7fa;
     color: #333;
+    transition: background-color 0.3s, color 0.3s;
   }
   
   .app-container {
@@ -43,9 +44,16 @@
     gap: 12px;
   }
   
-  /* 提取按钮 */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: stretch; /* 【关键】让子元素高度拉伸至一致 */
+  }
+
+  /* 提取网页内容按钮 */
   .extract-button {
-    width: 100%;
+    flex: 1; /* 【修改】占据剩余空间的一半，与 .btn 平分 */
     padding: 12px;
     font-size: 15px;
     font-weight: 600;
@@ -59,18 +67,22 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-width: 0; /* 防止内容溢出 */
   }
-  
+
   .extract-button:hover:not(:disabled) {
     background: linear-gradient(135deg, #1557b0, #1a73e8);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
   }
-  
+
   .extract-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+    transform: none; /* 禁用时取消位移 */
+    box-shadow: none;
   }
+
   
   /* 加载动画 */
   .spinner {
@@ -144,3 +156,764 @@
     text-align: right;
   }
   
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+  }
+
+
+  /* 通用按钮样式复用 (用于 PDF 上传的 label) */
+  .btn {
+    flex: 1; /* 【修改】占据剩余空间的一半，与 .extract-button 平分 */
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600; /* 【新增】加粗字体，与提取按钮保持一致 */
+    border: none;
+    transition: background-color 0.2s;
+    display: flex; /* 【修改】改为 flex 以便垂直居中 */
+    align-items: center; /* 【新增】垂直居中 */
+    justify-content: center; /* 【新增】水平居中 */
+    text-align: center;
+    min-width: 0; /* 防止内容溢出 */
+  }
+
+  /* PDF 按钮特定样式 */
+  .pdf-btn {
+    background-color: #2196F3;
+    color: white;
+  }
+
+  .pdf-btn:hover {
+    background-color: #1976D2;
+  }
+  
+  .pdf-btn:disabled {
+    background-color: #BDBDBD;
+    cursor: not-allowed;
+  }
+  
+  .status-message {
+    font-size: 12px;
+    margin-bottom: 10px;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  
+  .status-message.error {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .status-message.loading {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+
+  .pdf-btn:disabled {
+    background-color: #BDBDBD;
+    cursor: not-allowed;
+  }
+  
+  /* 【新增】专门为 label 模拟禁用状态 */
+  .pdf-btn.disabled {
+    background-color: #BDBDBD !important; /* 使用 !important 确保覆盖 hover 状态 */
+    color: #f5f5f5; /* 稍微降低文字透明度，看起来更像禁用 */
+    cursor: not-allowed;
+    pointer-events: none; /* 关键：禁止鼠标点击事件穿透到下方的 input */
+    opacity: 0.7;
+  }
+  
+  /* 可选：确保 disabled 状态下 hover 也不变色 */
+  .pdf-btn.disabled:hover {
+    background-color: #BDBDBD;
+  }
+
+  /* ==========================================
+   顶部导航栏样式
+   ========================================== */
+
+  .top-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
+    position: relative;
+    z-index: 100;
+    margin-bottom: 16px;
+  }
+
+  .nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    cursor: pointer;
+    position: relative;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s;
+    user-select: none;
+  }
+
+  .nav-item:hover {
+    background-color: #f5f7fa;
+  }
+
+  .nav-label {
+    font-weight: 500;
+  }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 101;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .dropdown-menu.active {
+    display: block;
+  }
+
+  .dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 13px;
+    color: #333;
+  }
+
+  .dropdown-item:hover {
+    background-color: #f5f7fa;
+  }
+
+  .dropdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99;
+  }
+
+/* ==========================================
+   暗色主题样式
+   ========================================== */
+
+  body.dark-theme {
+    background: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  body.dark-theme .app-container {
+    background: #1a1a1a;
+  }
+
+  body.dark-theme .top-nav {
+    background: #2d2d2d;
+    border-bottom-color: #404040;
+  }
+
+  body.dark-theme .nav-item {
+    color: #e0e0e0;
+  }
+
+  body.dark-theme .nav-item:hover {
+    background-color: #3d3d3d;
+  }
+
+  body.dark-theme .dropdown-menu {
+    background-color: #2d2d2d;
+    border-color: #404040;
+  }
+
+  body.dark-theme .dropdown-item {
+    color: #e0e0e0;
+  }
+
+  body.dark-theme .dropdown-item:hover {
+    background-color: #3d3d3d;
+  }
+
+  body.dark-theme .app-header {
+    border-bottom-color: #404040;
+  }
+
+  body.dark-theme .app-header h2 {
+    color: #4285f4;
+  }
+
+  body.dark-theme .subtitle {
+    color: #999;
+  }
+
+  body.dark-theme .content-textarea {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #e0e0e0;
+  }
+
+  body.dark-theme .content-textarea:focus {
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+  }
+
+  body.dark-theme .error-message {
+    background: #3d1f1f;
+    border-color: #5c2b2b;
+    color: #ff6b6b;
+  }
+
+  body.dark-theme .extract-button {
+    background: linear-gradient(135deg, #1557b0, #4285f4);
+  }
+
+  body.dark-theme .extract-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1a73e8, #5a9bf4);
+  }
+
+  body.dark-theme .btn {
+    color: #e0e0e0;
+  }
+
+  body.dark-theme .pdf-btn {
+    background-color: #1976D2;
+  }
+
+  body.dark-theme .pdf-btn:hover {
+    background-color: #1565C0;
+  }
+
+  body.dark-theme .content-label {
+    color: #bbb;
+  }
+
+  body.dark-theme .loading-indicator {
+    color: #999;
+  }
+
+  body.dark-theme .content-stats {
+    color: #888;
+  }
+
+  /* ==========================================
+   欢迎页面样式
+   ========================================== */
+
+  .welcome-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 60px); /* 减去顶部导航栏的高度 */
+  }
+
+  .welcome-content {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .welcome-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a73e8;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  .welcome-subtitle {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* 暗色主题下的欢迎页面样式 */
+  body.dark-theme .welcome-title {
+    color: #4285f4;
+  }
+
+  body.dark-theme .welcome-subtitle {
+    color: #999;
+  }
+
+  /* ==========================================
+   AI 配置面板样式
+   ========================================== */
+
+  .ai-config-panel {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+
+  body.dark-theme .ai-config-panel {
+    background: #2d2d2d;
+  }
+
+  .config-title {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #1a73e8;
+  }
+
+  body.dark-theme .config-title {
+    color: #4285f4;
+  }
+
+  .config-section {
+    margin-bottom: 20px;
+  }
+
+  .config-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #555;
+  }
+
+  body.dark-theme .config-label {
+    color: #bbb;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .config-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  body.dark-theme .config-input {
+    background: #1a1a1a;
+    border-color: #404040;
+    color: #e0e0e0;
+  }
+
+  .toggle-btn {
+    padding: 10px 12px;
+    background: #f5f7fa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  body.dark-theme .toggle-btn {
+    background: #3d3d3d;
+    border-color: #404040;
+  }
+
+  .help-link, .browse-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #1a73e8;
+    text-decoration: none;
+  }
+
+  .help-link:hover, .browse-link:hover {
+    text-decoration: underline;
+  }
+
+  .config-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+  }
+
+  body.dark-theme .config-select {
+    background: #1a1a1a;
+    border-color: #404040;
+    color: #e0e0e0;
+  }
+
+  .model-info-card {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f5f7fa;
+    border-radius: 6px;
+    border-left: 3px solid #1a73e8;
+  }
+
+  body.dark-theme .model-info-card {
+    background: #3d3d3d;
+  }
+
+  .model-description {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  body.dark-theme .model-description {
+    color: #999;
+  }
+
+  .model-tags {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .model-tag {
+    padding: 2px 8px;
+    background: #1a73e8;
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+
+  .model-context {
+    font-size: 12px;
+    color: #888;
+  }
+
+  body.dark-theme .model-context {
+    color: #999;
+  }
+
+  .config-slider {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  body.dark-theme .slider-labels {
+    color: #999;
+  }
+
+  .config-actions {
+    margin-top: 20px;
+  }
+
+  .save-config-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .save-config-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1557b0, #1a73e8);
+    transform: translateY(-1px);
+  }
+
+  .save-config-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .validation-message {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .validation-message.success {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .validation-message.error {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  body.dark-theme .validation-message.success {
+    background: #1f3d2b;
+    color: #6fcf97;
+  }
+
+  body.dark-theme .validation-message.error {
+    background: #3d1f1f;
+    color: #ff6b6b;
+  }
+
+  .privacy-note {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+  }
+
+  body.dark-theme .privacy-note {
+    color: #999;
+  }
+
+  /* ==========================================
+    AI 对话面板样式
+    ========================================== */
+
+  .ai-chat-panel {
+    margin-top: 20px;
+    border-top: 2px solid #e0e0e0;
+    padding-top: 20px;
+  }
+
+  body.dark-theme .ai-chat-panel {
+    border-top-color: #404040;
+  }
+
+  .chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  body.dark-theme .chat-messages {
+    background: #1a1a1a;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+  }
+
+  body.dark-theme .empty-state {
+    color: #999;
+  }
+
+  .empty-state ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 12px;
+  }
+
+  .empty-state li {
+    padding: 8px;
+    margin: 4px 0;
+    background: white;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  body.dark-theme .empty-state li {
+    background: #2d2d2d;
+  }
+
+  .message {
+    margin-bottom: 16px;
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .message-role {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  body.dark-theme .message-role {
+    color: #bbb;
+  }
+
+  .message-content {
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+  }
+
+  body.dark-theme .message-content {
+    background: #2d2d2d;
+    color: #e0e0e0;
+  }
+
+  .message.user .message-content {
+    background: #e3f2fd;
+    border-left: 3px solid #1a73e8;
+  }
+
+  body.dark-theme .message.user .message-content {
+    background: #1e3a5f;
+  }
+
+  .message.error .message-content {
+    background: #fef2f2;
+    border-left: 3px solid #dc2626;
+    color: #dc2626;
+  }
+
+  body.dark-theme .message.error .message-content {
+    background: #3d1f1f;
+    color: #ff6b6b;
+  }
+
+  .typing-indicator {
+    color: #888;
+    font-style: italic;
+  }
+
+  body.dark-theme .typing-indicator {
+    color: #999;
+  }
+
+  .chat-input-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chat-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  body.dark-theme .chat-input {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #e0e0e0;
+  }
+
+  .chat-input:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+  }
+
+  .input-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .clear-btn, .send-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .clear-btn {
+    background: #f5f5f5;
+    color: #666;
+  }
+
+  .clear-btn:hover:not(:disabled) {
+    background: #e0e0e0;
+  }
+
+  body.dark-theme .clear-btn {
+    background: #3d3d3d;
+    color: #bbb;
+  }
+
+  .send-btn {
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    color: white;
+    font-weight: 600;
+  }
+
+  .send-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1557b0, #1a73e8);
+    transform: translateY(-1px);
+  }
+
+  .clear-btn:disabled, .send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-chat-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+  }
+
+  body.dark-theme .ai-chat-placeholder {
+    color: #999;
+  }
+
+  .typing-indicator {
+    color: #888;
+    font-style: italic;
+  }
+  
+  body.dark-theme .typing-indicator {
+    color: #999;
+  }
+  
+  /* ==========================================
+     代理标识样式
+     ========================================== */
+  
+  .proxy-indicator {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  
+  .platform-description {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 16px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border-left: 3px solid #1a73e8;
+  }
+  
+  body.dark-theme .platform-description {
+    background: #2d2d2d;
+    color: #999;
+  }

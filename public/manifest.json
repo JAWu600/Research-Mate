@@ -1,14 +1,14 @@
 {
     "manifest_version": 3,
-    "name": "Paper Reading Assistant",
-    "version": "1.1.0",
-    "description": "提取文献网页内容，辅助论文阅读",
-    "permissions": ["activeTab", "sidePanel", "scripting"],
+    "name": "Research Mate",
+    "version": "2.0.0",
+    "description": "科研论文辅助阅读工具",
+    "permissions": ["activeTab", "sidePanel", "scripting", "offscreen", "storage"],
     "host_permissions": [
       "<all_urls>" 
     ],
     "action": {
-      "default_title": "打开文献阅读助手"
+      "default_title": "打开科研助读"
     },
     "side_panel": {
       "default_path": "src/sidebar/index.html"
@@ -22,7 +22,12 @@
         "js": ["content.js"],
         "run_at": "document_idle"
       }
-    ]
-  }
-  
+    ],
+    "web_accessible_resources": [
+    {
+      "resources": ["libs/pdf.worker.min.mjs"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
   
