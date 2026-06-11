@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "Research Mate",
+    "version": "2.0.0",
+    "description": "科研论文辅助阅读工具",
+    "permissions": ["activeTab", "sidePanel", "scripting", "offscreen", "storage"],
+    "host_permissions": [
+      "<all_urls>" 
+    ],
+    "action": {
+      "default_title": "打开科研助读"
+    },
+    "side_panel": {
+      "default_path": "src/sidebar/index.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+      }
+    ],
+    "web_accessible_resources": [
+    {
+      "resources": ["libs/pdf.worker.min.mjs"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
+  
