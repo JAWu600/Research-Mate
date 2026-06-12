@@ -13,20 +13,37 @@ export const SILICONFLOW_MODELS = [
     id: 'sf-deepseek-r1-qwen3-8b',
     name: 'DeepSeek R1 Qwen3 8B',
     modelId: 'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
-    contextLength: 128000
+    contextLength: 128000,
+    tpm: 50000
+  },
+  {
+    id: 'sf-glm-z1-9b',
+    name: 'GLM Z1 9B',
+    modelId: 'THUDM/GLM-Z1-9B-0414',
+    contextLength: 128000,
+    tpm: 50000  
   },
   {
     id: 'sf-qwen3-5-4b',
     name: 'Qwen3 5.4B',
     modelId: 'Qwen/Qwen3.5-4B',
-    contextLength: 256000
+    contextLength: 256000,
+    tpm: 50000
   },
   {
     id: 'sf-qwen3-8b',
     name: 'Qwen 3 8B',
     modelId: 'Qwen/Qwen3-8B',
-    contextLength: 128000
-  }
+    contextLength: 128000,
+    tpm: 50000
+  },
+  {
+    id: 'sf-qwen2-7b',
+    name: 'Qwen 2.5 7B Instruct',
+    modelId: 'Qwen/Qwen2.5-7B-Instruct',
+    contextLength: 32000,
+    tpm: 50000
+  },
 ];
 
 // ==========================================
@@ -35,28 +52,25 @@ export const SILICONFLOW_MODELS = [
 
 export const GROQ_MODELS = [
   {
-    id: 'groq-llama3-1-8b',
-    name: 'Llama 3.1 8B Instant',
-    modelId: 'llama-3.1-8b-instant',
-    contextLength: 131072
+    id: 'groq-llama-4-scout-17b-16e-instruct',
+    name: 'Llama 4 Scout 17B 16E Instruct',
+    modelId: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    contextLength: 131072,
+    tpm: 30000
   },
   {
-    id: 'groq-gpt-oss-20b',
-    name: 'GPT-OSS 20B',
-    modelId: 'openai/gpt-oss-20b',
-    contextLength: 131072
+    id: 'groq-compound',
+    name: 'Compound',
+    modelId: 'groq/compound',
+    contextLength: 131072,
+    tpm: 70000
   },
   {
-    id: 'groq-qwen3-32b',
-    name: 'Qwen3 32B',
-    modelId: 'qwen/qwen3-32b',
-    contextLength: 131072
-  },
-  {
-    id: 'groq-llama3-3-70b',
-    name: 'Llama 3.3 70B Versatile',
-    modelId: 'llama-3.3-70b-versatile',
-    contextLength: 131072
+    id: 'groq-compound-mini',
+    name: 'Compound Mini',
+    modelId: 'groq/compound-mini',
+    contextLength: 131072,
+    tpm: 70000
   }
 ];
 
@@ -67,21 +81,21 @@ export const GROQ_MODELS = [
 export const PLATFORM_CONFIG = {
   siliconflow: {
     name: '硅基流动',
-    displayName: '硅基流动（无需翻墙）',
+    displayName: '硅基流动SiliconFlow',
     website: 'https://siliconflow.cn/',
     apiKeyUrl: 'https://cloud.siliconflow.cn/account/ak',
     modelsUrl: 'https://siliconflow.cn/models',
     requiresProxy: false,
-    description: '无需翻墙，包含多款免费模型'
+    description: '无需翻墙，包含多款免费模型。能够适用于长文献（字数10w以上）。'
   },
   groq: {
     name: 'Groq',
-    displayName: 'Groq（需梯子）',
+    displayName: 'Groq',
     website: 'https://groq.com/',
     apiKeyUrl: 'https://console.groq.com/keys',
     modelsUrl: 'https://console.groq.com/docs/models',
     requiresProxy: true,
-    description: '需要梯子，有免费额度'
+    description: '需要梯子，模型有免费额度。因限速限量严格，适合较短文献（字数6w以下）。'
   }
 };
 

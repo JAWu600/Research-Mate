@@ -13,7 +13,7 @@ const MENU_CONFIG = [
     id: 'settings',
     label: '设置',
     items: [
-      { id: 'theme-toggle', label: '明/暗切换', action: 'handleThemeToggle' }
+      { id: 'theme-toggle', label: '明/暗主题切换', action: 'handleThemeToggle' }
     ]
   }
 ];

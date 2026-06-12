@@ -158,6 +158,9 @@ export default function MultiPlatformConfigPanel({ selectedPlatform }) {
             <p className="model-context">
               上下文长度: {selectedModelInfo.contextLength.toLocaleString()} tokens
             </p>
+            <p className="model-tpm">
+              TPM: {selectedModelInfo.tpm.toLocaleString()} tokens/min
+            </p>
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { callAI } from '../utils/AIModelApi';
 import { DEFAULT_SYSTEM_PROMPT, getModelById } from '../config/modelConfig';
 
@@ -7,6 +7,10 @@ export default function AIChatPanel({ content }) {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState(null);
+  const [showHistory, setShowHistory] = useState(true);
+  const [collapsedMessages, setCollapsedMessages] = useState(new Set());
+  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -45,6 +49,36 @@ export default function AIChatPanel({ content }) {
       console.warn('[AIChat] 无法读取存储配置:', error.message);
     }
   }, []);
+
+  useEffect(() => {
+    if (messages.length > 0 && config) {
+      chrome.storage.local.set({ chatMessages: messages });
+      console.log('[AIChat] 已保存对话记录到存储，消息数:', messages.length);
+    }
+  }, [messages, config]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  const handleRestoreHistory = () => {
+    chrome.storage.local.get(['chatMessages'], (result) => {
+      if (result.chatMessages && Array.isArray(result.chatMessages) && result.chatMessages.length > 0) {
+        setMessages(result.chatMessages);
+        setShowHistory(true);
+        setCollapsedMessages(new Set());
+        console.log('[AIChat] 已恢复对话记录，消息数:', result.chatMessages.length);
+      } else {
+        console.log('[AIChat] 没有可恢复的对话记录');
+      }
+    });
+  };
 
   const handleSend = async () => {
     if (!userInput.trim()) return;
@@ -105,6 +139,20 @@ ${content}
 
   const handleClear = () => {
     setMessages([]);
+    setCollapsedMessages(new Set());
+    console.log('[AIChat] 已清空显示区域，但保留存储中的历史记录');
+  };
+
+  const toggleCollapse = (index) => {
+    setCollapsedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
   if (!config) {
@@ -115,42 +163,61 @@ ${content}
     );
   }
 
+  const hasStoredHistory = messages.length === 0;
+
   return (
     <div className="ai-chat-panel">
-      <div className="chat-messages">
-        {messages.length === 0 ? (
-          <div className="empty-state">
-            <p>💡 针对文献内容提问，例如：</p>
-            <ul>
-              <li>请解释研究方法部分的技术细节</li>
-              <li>这篇论文的创新点在哪里？</li>
-              <li>总结论文的实验结果</li>
-            </ul>
-          </div>
-        ) : (
-          messages.map((msg, index) => (
-            <div key={index} className={`message ${msg.role}`}>
-              <div className="message-header">
-                <span className="message-role">
-                  {msg.role === 'user' ? '👤 您' : '🤖 AI'}
-                </span>
+      {showHistory && (
+        <div className="chat-messages" ref={chatContainerRef}>
+          {messages.length === 0 ? (
+            <div className="empty-state">
+              <p>💡 针对文献内容提问，例如：</p>
+              <ul>
+                <li>请解释研究方法部分的技术细节</li>
+                <li>这篇论文的创新点在哪里？</li>
+                <li>总结论文的实验结果</li>
+              </ul>
+            </div>
+          ) : (
+            messages.map((msg, index) => (
+              <div key={index} className={`message ${msg.role}`}>
+                <div className="message-header">
+                  <span className="message-role">
+                    {msg.role === 'user' ? '' : '🤖 AI'}
+                  </span>
+                  {msg.role === 'assistant' && (
+                    <button
+                      onClick={() => toggleCollapse(index)}
+                      className="collapse-btn"
+                      title={collapsedMessages.has(index) ? '展开' : '折叠'}
+                    >
+                      {collapsedMessages.has(index) ? '▼' : '▲'}
+                    </button>
+                  )}
+                  {msg.role === 'user' && (
+                    <span className="message-role user-label">👤 您</span>
+                  )}
+                </div>
+                {(!collapsedMessages.has(index) || msg.role !== 'assistant') && (
+                  <div className="message-content">{msg.content}</div>
+                )}
               </div>
-              <div className="message-content">{msg.content}</div>
+            ))
+          )}
+          
+          {isLoading && (
+            <div className="message assistant loading">
+              <div className="message-header">
+                <span className="message-role">🤖 AI</span>
+              </div>
+              <div className="message-content">
+                <span className="typing-indicator">思考中...</span>
+              </div>
             </div>
-          ))
-        )}
-        
-        {isLoading && (
-          <div className="message assistant loading">
-            <div className="message-header">
-              <span className="message-role">🤖 AI</span>
-            </div>
-            <div className="message-content">
-              <span className="typing-indicator">思考中...</span>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
 
       <div className="chat-input-area">
         <textarea
@@ -168,6 +235,21 @@ ${content}
           }}
         />
         <div className="input-actions">
+          {hasStoredHistory ? (
+            <button
+              onClick={handleRestoreHistory}
+              className="history-btn"
+            >
+              💬 恢复对话记录
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="history-btn"
+            >
+              {showHistory ? '💬 隐藏对话' : '💬 显示对话'} ({messages.length})
+            </button>
+          )}
           <button
             onClick={handleClear}
             disabled={isLoading || messages.length === 0}

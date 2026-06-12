@@ -593,6 +593,25 @@
     color: #999;
   }
 
+  .model-context {
+    font-size: 12px;
+    color: #888;
+  }
+
+  body.dark-theme .model-context {
+    color: #999;
+  }
+
+  .model-tpm {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  body.dark-theme .model-tpm {
+    color: #999;
+  }
+
   .config-slider {
     width: 100%;
     margin-top: 8px;
@@ -690,6 +709,34 @@
     border-top-color: #404040;
   }
 
+  .chat-header-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .history-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .history-btn:hover {
+    background: linear-gradient(135deg, #1557b0, #1a73e8);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+  }
+
+  body.dark-theme .history-btn {
+    background: linear-gradient(135deg, #1557b0, #4285f4);
+  }
+
   .chat-messages {
     max-height: 400px;
     overflow-y: auto;
@@ -701,6 +748,53 @@
 
   body.dark-theme .chat-messages {
     background: #1a1a1a;
+  }
+
+  .message-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .message-role {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  body.dark-theme .message-role {
+    color: #bbb;
+  }
+
+  .message-role.user-label {
+    margin-left: auto;
+  }
+
+  .collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #888;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .collapse-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+  }
+
+  body.dark-theme .collapse-btn {
+    color: #999;
+  }
+
+  body.dark-theme .collapse-btn:hover {
+    background: #404040;
+    color: #e0e0e0;
   }
 
   .empty-state {
